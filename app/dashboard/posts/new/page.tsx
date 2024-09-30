@@ -2,13 +2,13 @@ import { PostForm } from "./PostForm";
 
 const CreatePosts = () => {
   return (
-    <>
-      <h2>New posts</h2>
+    <div>
+      <h2 className="mt-4 text-2xl font-bold">New posts</h2>
 
-      <p>Create yout post</p>
+      <p className="mb-7 mt-5">Create yout post</p>
 
       <PostForm />
-    </>
+    </div>
   );
 };
 

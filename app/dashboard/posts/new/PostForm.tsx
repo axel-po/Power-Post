@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -17,7 +18,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LANGUAGES } from "./languages.const";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { PostMode } from "@prisma/client";
+import { useMutation } from "@tanstack/react-query";
+import { LANGUAGES, PostModeDataMap } from "./post.const";
 import { PostSchema } from "./post.schema";
 
 export type PostFormProps = {
@@ -33,11 +37,26 @@ export const PostForm = (props: PostFormProps) => {
     },
   });
 
+  const postMutation = useMutation({
+    mutationFn: async (values: PostSchema) => {
+      const result = await fetch("/api/powerpost", {
+        method: "POST",
+        body: JSON.stringify(values),
+      });
+      const json = await result.json();
+      return json;
+    },
+  });
+
+  console.log(postMutation.data);
+
   return (
     <Form
+      disabled={postMutation.isPending}
       form={form}
+      className="flex flex-col gap-4"
       onSubmit={(values) => {
-        console.log("values", values);
+        postMutation.mutate(values);
       }}
     >
       <FormField
@@ -57,10 +76,29 @@ export const PostForm = (props: PostFormProps) => {
         control={form.control}
         name="mode"
         render={({ field }) => (
-          <FormItem>
-            <FormLabel>Source</FormLabel>
+          <FormItem className="flex flex-col items-start gap-2 border border-border p-2">
+            <FormLabel>Mode</FormLabel>
             <FormControl>
-              <Input placeholder="https://medium.com/..." {...field} />
+              <ToggleGroup
+                className="flex flex-wrap gap-2"
+                type="single"
+                value={field.value}
+                onValueChange={field.onChange}
+              >
+                {Object.entries(PostMode).map(([key, value]) => {
+                  const data = PostModeDataMap[key as PostMode];
+                  return (
+                    <ToggleGroupItem
+                      key={key}
+                      value={value}
+                      className="flex h-auto flex-col gap-2 p-3"
+                    >
+                      <data.icon size={24} />
+                      <span>{value}</span>
+                    </ToggleGroupItem>
+                  );
+                })}
+              </ToggleGroup>
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -90,6 +128,9 @@ export const PostForm = (props: PostFormProps) => {
           </FormItem>
         )}
       />
+      <Button type="submit">
+        {postMutation.isPending ? "Create..." : "Create"}
+      </Button>
     </Form>
   );
 };

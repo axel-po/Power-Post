@@ -6,3 +6,5 @@ export const PostSchema = z.object({
   mode: z.nativeEnum(PostMode),
   language: z.string().default("English"),
 });
+
+export type PostSchema = z.infer<typeof PostSchema>;
